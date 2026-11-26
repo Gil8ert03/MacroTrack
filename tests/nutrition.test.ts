@@ -110,3 +110,17 @@ describe('almacenamiento', () => {
     expect(await db.entries.count()).toBe(2);
   });
 });
+
+describe('URL de USDA', () => {
+  it('codifica espacios como %20, no como +', async () => {
+    const { searchUSDA } = await import('../src/api/usda');
+    let url = '';
+    (globalThis as any).fetch = async (u: string) => {
+      url = u;
+      return { ok: true, status: 200, json: async () => ({ foods: [] }) };
+    };
+    await searchUSDA('yogurt griego', 'KEY');
+    expect(url).toContain('query=yogurt%20griego');
+    expect(url).not.toContain('+');
+  });
+});

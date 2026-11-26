@@ -81,12 +81,15 @@ export function mapFood(f: any): SearchResult | null {
 }
 
 export async function searchUSDA(query: string, apiKey: string, signal?: AbortSignal): Promise<SearchResult[]> {
-  const params = new URLSearchParams({
-    api_key: apiKey,
-    query,
-    pageSize: '25',
-    dataType: 'Foundation,SR Legacy,Survey (FNDDS)',
-  });
+  // Se codifica con encodeURIComponent: USDA responde 400 si los espacios llegan como "+".
+  const params = [
+    ['api_key', apiKey],
+    ['query', query],
+    ['pageSize', '25'],
+    ['dataType', 'Foundation,SR Legacy,Survey (FNDDS)'],
+  ]
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join('&');
   const data = await fetchJson(`${API}?${params}`, signal);
   return (data?.foods ?? [])
     .map(mapFood)
